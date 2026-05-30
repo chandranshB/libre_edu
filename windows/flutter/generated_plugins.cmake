@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   ffmpeg_kit_extended_flutter
   media_kit_libs_windows_video
   media_kit_video
+  syncfusion_pdfviewer_windows
   url_launcher_windows
 )
 

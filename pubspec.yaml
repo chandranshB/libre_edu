@@ -15,8 +15,10 @@ dependencies:
   media_kit: ^1.2.6
   media_kit_libs_video: ^1.0.7
   media_kit_video: ^2.0.1
+  miniplayer: ^1.0.1
   path_provider: ^2.1.5
   shared_preferences: ^2.5.5
+  syncfusion_flutter_pdfviewer: ^33.2.8
   url_launcher: ^6.3.2
 
 dev_dependencies:

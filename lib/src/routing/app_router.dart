@@ -1,18 +1,39 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'app_shell.dart';
 import '../features/courses/presentation/course_list_screen.dart';
 import '../features/courses/presentation/course_detail_screen.dart';
 import '../features/video_player/presentation/streaming_player_screen.dart';
+import '../features/pdf_viewer/presentation/pdf_viewer_screen.dart';
+import '../features/downloads/presentation/offline_downloads_screen.dart';
 import '../features/courses/domain/course.dart';
 
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+
 final goRouter = GoRouter(
+  navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const CourseListScreen(),
+    ShellRoute(
+      navigatorKey: _shellNavigatorKey,
+      builder: (context, state, child) {
+        return AppShell(child: child);
+      },
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const CourseListScreen(),
+        ),
+        GoRoute(
+          path: '/offline',
+          builder: (context, state) => const OfflineDownloadsScreen(),
+        ),
+      ],
     ),
     GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
       path: '/course/:id',
       builder: (context, state) {
         final course = state.extra as Course;
@@ -20,15 +41,27 @@ final goRouter = GoRouter(
       },
     ),
     GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
       path: '/play',
       builder: (context, state) {
         final extras = state.extra as Map<String, dynamic>;
         return StreamingPlayerScreen(
           videoUrl: extras['url'] as String,
           title: extras['title'] as String,
+          videoId: extras['videoId'] as String?,
         );
       },
     ),
-    // Route for Offline screen can be added here
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/pdf',
+      builder: (context, state) {
+        final extras = state.extra as Map<String, dynamic>;
+        return PdfViewerScreen(
+          pdfUrl: extras['url'] as String,
+          title: extras['title'] as String,
+        );
+      },
+    ),
   ],
 );

@@ -70,10 +70,22 @@ class M3U8ParserService {
 
       // 6. Save to persistent cache
       await prefs.setString(cacheKey, formatted);
+      await prefs.setDouble('${cacheKey}_seconds', totalDuration);
       return formatted;
     } catch (e) {
       print('Error parsing m3u8 duration: $e');
       return "Unknown Duration";
     }
+  }
+
+  Future<double> getDurationSeconds(String masterUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'duration_$masterUrl';
+    if (prefs.containsKey('${cacheKey}_seconds')) {
+      return prefs.getDouble('${cacheKey}_seconds')!;
+    }
+    // If not cached, we call getDuration first to parse it
+    await getDuration(masterUrl);
+    return prefs.getDouble('${cacheKey}_seconds') ?? 0.0;
   }
 }
