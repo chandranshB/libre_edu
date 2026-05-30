@@ -25,7 +25,7 @@ jobs:
 
           - os: ubuntu-latest
             target: Web
-            build_command: flutter build web --release
+            build_command: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
             asset_path: libre_edu-web.zip
 
           - os: ubuntu-latest
@@ -102,3 +102,11 @@ jobs:
           files: ${{ matrix.asset_path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to GitHub Pages
+        if: matrix.target == 'Web' && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/web/
+          # Optional: If you use a custom domain later, you can add cname here
