@@ -1,6 +1,7 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
+import 'ffmpeg_stub.dart' if (dart.library.io) 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../courses/application/m3u8_parser_service.dart';
 
@@ -38,6 +39,7 @@ class DownloadService extends Notifier<Map<String, DownloadState>> {
   }
 
   Future<void> checkExistingDownloads(String videoId) async {
+    if (kIsWeb) return;
     final path = await getOfflineVideoPath(videoId);
     if (path != null) {
       state = {
@@ -48,6 +50,7 @@ class DownloadService extends Notifier<Map<String, DownloadState>> {
   }
 
   Future<void> downloadAndConvertM3u8(String m3u8Url, String videoId) async {
+    if (kIsWeb) return;
     final Directory directory = await getApplicationDocumentsDirectory();
     final String outputPath = '${directory.path}/$videoId.mp4';
     
@@ -141,6 +144,7 @@ class DownloadService extends Notifier<Map<String, DownloadState>> {
   }
 
   Future<String?> getOfflineVideoPath(String videoId) async {
+    if (kIsWeb) return null;
     final Directory directory = await getApplicationDocumentsDirectory();
     final String path = '${directory.path}/$videoId.mp4';
     final file = File(path);
