@@ -4,7 +4,8 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:miniplayer/miniplayer.dart';
 import '../application/global_player_provider.dart';
 import '../../courses/presentation/course_detail_screen.dart'; // For CourseNodeWidget/LessonTile
-import '../application/stream_quality_service.dart';
+import 'package:media_kit/media_kit.dart';
+import '../../courses/application/stream_quality_service.dart';
 
 final miniplayerControllerProvider = Provider((ref) => MiniplayerController());
 
@@ -38,6 +39,73 @@ class _GlobalPlayerWidgetState extends ConsumerState<GlobalPlayerWidget> {
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  void _showQualitySelectionDialog(String currentUrl) {
+    final qualities = StreamQualityService.getAvailableQualities(currentUrl);
+    
+    if (qualities == null || qualities.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Quality options not available for this video.')));
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('Select Streaming Quality', style: Theme.of(context).textTheme.titleLarge),
+              ),
+              ...qualities.map((q) => ListTile(
+                title: Text(q),
+                leading: const Icon(Icons.hd),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final position = _controller.player.state.position;
+                  final optimizedUrl = StreamQualityService.optimizeUrl(currentUrl, quality: q);
+                  await _controller.player.open(Media(optimizedUrl));
+                  await _controller.player.seek(position);
+                },
+              )).toList(),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  void _showPlaybackSpeedDialog() {
+    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('Playback Speed', style: Theme.of(context).textTheme.titleLarge),
+              ),
+              ...speeds.map((speed) => ListTile(
+                title: Text('${speed}x'),
+                leading: const Icon(Icons.speed),
+                onTap: () {
+                  Navigator.pop(context);
+                  _controller.player.setRate(speed);
+                },
+              )).toList(),
+            ],
+          ),
+        );
+      }
+    );
   }
 
   @override
@@ -104,72 +172,151 @@ class _GlobalPlayerWidgetState extends ConsumerState<GlobalPlayerWidget> {
         }
 
         // Full Screen Player
-        return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          body: SafeArea(
-            child: Column(
-              children: [
-                // Video Player
-                MaterialVideoControlsTheme(
-                  normal: const MaterialVideoControlsThemeData(
-                    buttonBarButtonSize: 24.0,
-                    buttonBarButtonColor: Colors.white,
-                  ),
-                  fullscreen: const MaterialVideoControlsThemeData(
-                    buttonBarButtonSize: 24.0,
-                    buttonBarButtonColor: Colors.white,
-                  ),
-                  child: Container(
-                    color: Colors.black,
-                    width: double.infinity,
-                    height: MediaQuery.of(context).size.width * 9.0 / 16.0,
-                    child: Stack(
-                      children: [
-                        Video(controller: _controller),
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
-                            onPressed: () => miniplayerController.animateToHeight(state: PanelState.MIN),
-                          ),
-                        ),
-                      ],
+        final isDesktop = MediaQuery.of(context).size.width >= 800;
+
+        final videoPlayerWidget = MaterialVideoControlsTheme(
+          normal: MaterialVideoControlsThemeData(
+            buttonBarButtonSize: 24.0,
+            buttonBarButtonColor: Colors.white,
+            topButtonBar: [
+              const Spacer(),
+              MaterialCustomButton(
+                onPressed: _showPlaybackSpeedDialog,
+                icon: const Icon(Icons.speed, color: Colors.white),
+              ),
+              MaterialCustomButton(
+                onPressed: () {
+                  if (playerState.currentVideo != null) {
+                    _showQualitySelectionDialog(playerState.currentVideo!.m3u8Url);
+                  }
+                },
+                icon: const Icon(Icons.settings, color: Colors.white),
+              ),
+            ],
+          ),
+          fullscreen: MaterialVideoControlsThemeData(
+            buttonBarButtonSize: 24.0,
+            buttonBarButtonColor: Colors.white,
+            topButtonBar: [
+              const Spacer(),
+              MaterialCustomButton(
+                onPressed: _showPlaybackSpeedDialog,
+                icon: const Icon(Icons.speed, color: Colors.white),
+              ),
+              MaterialCustomButton(
+                onPressed: () {
+                  if (playerState.currentVideo != null) {
+                    _showQualitySelectionDialog(playerState.currentVideo!.m3u8Url);
+                  }
+                },
+                icon: const Icon(Icons.settings, color: Colors.white),
+              ),
+            ],
+          ),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
+              color: Colors.black,
+              width: double.infinity,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Video(controller: _controller),
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
+                      onPressed: () => miniplayerController.animateToHeight(state: PanelState.MIN),
                     ),
                   ),
-                ),
-                // Current Video Info
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        playerState.currentVideo?.title ?? 'Playing Video',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final videoInfoWidget = Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                playerState.currentVideo?.title ?? 'Playing Video',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Divider(),
+            ],
+          ),
+        );
+
+        final playlistWidget = ListView.builder(
+          controller: _scrollController,
+          itemCount: playerState.playlist.length,
+          itemBuilder: (context, index) {
+            final lesson = playerState.playlist[index];
+            final isPlaying = index == playerState.currentIndex;
+            
+            return Container(
+              color: isPlaying ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3) : null,
+              child: LessonTile(lesson: lesson, playlist: playerState.playlist, isPlaylistMode: true, index: index, courseTitle: playerState.courseTitle),
+            );
+          },
+        );
+
+        return PopScope(
+          canPop: false,
+          onPopInvoked: (didPop) {
+            if (didPop) return;
+            miniplayerController.animateToHeight(state: PanelState.MIN);
+          },
+          child: Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: GestureDetector(
+              onTap: () {}, // Consume tap to prevent miniplayer from minimizing
+              behavior: HitTestBehavior.opaque,
+              child: SafeArea(
+                child: isDesktop
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Left side: Video + Info
+                          Expanded(
+                            flex: 7,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  videoPlayerWidget,
+                                  videoInfoWidget,
+                                ],
+                              ),
+                            ),
+                          ),
+                          const VerticalDivider(width: 1, thickness: 1),
+                          // Right side: Playlist
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(playerState.courseTitle.isNotEmpty ? playerState.courseTitle : 'Up Next', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                ),
+                                Expanded(child: playlistWidget),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        children: [
+                          videoPlayerWidget,
+                          videoInfoWidget,
+                          Expanded(child: playlistWidget),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      const Divider(),
-                    ],
-                  ),
-                ),
-                // Syllabus / Playlist
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: playerState.playlist.length,
-                    itemBuilder: (context, index) {
-                      final lesson = playerState.playlist[index];
-                      final isPlaying = index == playerState.currentIndex;
-                      
-                      return Container(
-                        color: isPlaying ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3) : null,
-                        child: LessonTile(lesson: lesson, isPlaylistMode: true, index: index),
-                      );
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );

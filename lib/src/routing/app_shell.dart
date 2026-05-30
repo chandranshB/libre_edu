@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../features/video_player/presentation/global_player_widget.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
@@ -75,13 +74,6 @@ class AppShell extends StatelessWidget {
                 ),
               ],
             ),
-    );
-
-    return Stack(
-      children: [
-        scaffold,
-        const GlobalPlayerWidget(),
-      ],
     );
   }
 }

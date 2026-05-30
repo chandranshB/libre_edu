@@ -216,9 +216,9 @@ class CourseDetailScreen extends ConsumerWidget {
                                   heroTag: null,
                                   onPressed: () {
                                     final firstVideo = _getFirstVideo(course.content);
-                                    if (firstVideo != null) {
+                                    if (context.mounted) {
                                       final playlist = _getAllVideos(course.content);
-                                      ref.read(globalPlayerProvider.notifier).playVideo(playlist, 0);
+                                      ref.read(globalPlayerProvider.notifier).playVideo(playlist, 0, courseTitle: course.title);
                                     }
                                   },
                                   icon: const Icon(Icons.play_arrow),
@@ -244,7 +244,7 @@ class CourseDetailScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final playlist = _getAllVideos(course.content);
-                        return CourseNodeWidget(node: course.content[index], playlist: playlist);
+                        return CourseNodeWidget(node: course.content[index], playlist: playlist, courseTitle: course.title);
                       },
                       childCount: course.content.length,
                     ),
@@ -262,8 +262,14 @@ class CourseDetailScreen extends ConsumerWidget {
 class CourseNodeWidget extends StatelessWidget {
   final CourseNode node;
   final List<VideoLesson>? playlist;
+  final String courseTitle;
 
-  const CourseNodeWidget({super.key, required this.node, this.playlist});
+  const CourseNodeWidget({
+    super.key,
+    required this.node,
+    this.playlist,
+    this.courseTitle = '',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -292,6 +298,7 @@ class CourseNodeWidget extends StatelessWidget {
       return LessonTile(
         lesson: node as VideoLesson,
         playlist: playlist,
+        courseTitle: courseTitle,
       );
     }
     return const SizedBox.shrink();
@@ -323,6 +330,7 @@ class LessonTile extends ConsumerStatefulWidget {
   final List<VideoLesson>? playlist;
   final bool isPlaylistMode;
   final int? index;
+  final String courseTitle;
 
   const LessonTile({
     super.key,
@@ -330,6 +338,7 @@ class LessonTile extends ConsumerStatefulWidget {
     this.playlist,
     this.isPlaylistMode = false,
     this.index,
+    this.courseTitle = '',
   });
 
   @override
@@ -351,7 +360,7 @@ class _LessonTileState extends ConsumerState<LessonTile> {
     final playlist = widget.playlist ?? [widget.lesson];
     final index = widget.index ?? playlist.indexWhere((v) => v.id == widget.lesson.id);
     
-    ref.read(globalPlayerProvider.notifier).playVideo(playlist, index >= 0 ? index : 0);
+    ref.read(globalPlayerProvider.notifier).playVideo(playlist, index >= 0 ? index : 0, courseTitle: widget.courseTitle);
   }
 
   void _showQualitySelectionDialog() {
