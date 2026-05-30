@@ -19,6 +19,7 @@ class GlobalPlayerWidget extends ConsumerStatefulWidget {
 class _GlobalPlayerWidgetState extends ConsumerState<GlobalPlayerWidget> {
   late final VideoController _controller;
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey _videoKey = GlobalKey();
 
   @override
   void initState() {
@@ -137,27 +138,36 @@ class _GlobalPlayerWidgetState extends ConsumerState<GlobalPlayerWidget> {
 
         if (isMini) {
           return Container(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            color: Theme.of(context).colorScheme.surface,
             child: Row(
               children: [
                 SizedBox(
                   width: 120,
-                  height: minHeight,
-                  child: Video(
-                    controller: _controller,
-                    controls: NoVideoControls,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Video(
+                      key: _videoKey,
+                      controller: _controller,
+                      controls: (state) => const SizedBox.shrink(),
+                    ),
                   ),
                 ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text(
-                      playerState.currentVideo?.title ?? 'Unknown Video',
+                      playerState.currentVideo?.title ?? 'Playing Video',
+                      style: Theme.of(context).textTheme.titleMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    playerState.player?.state.playing == true ? Icons.pause : Icons.play_arrow
+                  ),
+                  onPressed: () => playerState.player?.playOrPause(),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -165,7 +175,6 @@ class _GlobalPlayerWidgetState extends ConsumerState<GlobalPlayerWidget> {
                     ref.read(globalPlayerProvider.notifier).closePlayer();
                   },
                 ),
-                const SizedBox(width: 8),
               ],
             ),
           );
@@ -221,7 +230,10 @@ class _GlobalPlayerWidgetState extends ConsumerState<GlobalPlayerWidget> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Video(controller: _controller),
+                  Video(
+                    key: _videoKey,
+                    controller: _controller,
+                  ),
                   Positioned(
                     top: 8,
                     left: 8,

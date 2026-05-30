@@ -1,0 +1,104 @@
+name: Flutter Build & Release All Platforms
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*' # Trigger release when pushing a tag like v1.0.0
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }} for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: Android
+            build_command: flutter build apk --release
+            asset_path: build/app/outputs/flutter-apk/app-release.apk
+
+          - os: ubuntu-latest
+            target: Web
+            build_command: flutter build web --release
+            asset_path: libre_edu-web.zip
+
+          - os: ubuntu-latest
+            target: Linux
+            build_command: flutter build linux --release
+            asset_path: libre_edu-linux.zip
+
+          - os: windows-latest
+            target: Windows
+            build_command: flutter build windows --release
+            asset_path: libre_edu-windows.zip
+
+          - os: macos-latest
+            target: macOS
+            build_command: flutter build macos --release
+            asset_path: libre_edu-macos.zip
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java (for Android)
+        if: matrix.target == 'Android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Linux dependencies
+        if: matrix.target == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build ${{ matrix.target }}
+        run: ${{ matrix.build_command }}
+
+      # Compress directories for GitHub Releases (Web, Linux, macOS, Windows)
+      - name: Compress Web Build
+        if: matrix.target == 'Web'
+        run: zip -r libre_edu-web.zip build/web/
+      
+      - name: Compress Linux Build
+        if: matrix.target == 'Linux'
+        run: zip -r libre_edu-linux.zip build/linux/x64/release/bundle/
+
+      - name: Compress macOS Build
+        if: matrix.target == 'macOS'
+        run: zip -r libre_edu-macos.zip build/macos/Build/Products/Release/
+
+      - name: Compress Windows Build
+        if: matrix.target == 'Windows'
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath libre_edu-windows.zip
+
+      - name: Upload Artifacts to Workflow Run
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-Build
+          path: ${{ matrix.asset_path }}
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
