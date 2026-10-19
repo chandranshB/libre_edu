@@ -14,7 +14,33 @@
 [![Platform Support](https://img.shields.io/badge/Platforms-Android%20%7C%20Windows%20%7C%20Linux%20%7C%20macOS%20%7C%20Web-orange)](#-cross-platform-downloads)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[**Live Web Demo**](https://chandranshb.github.io/libre_edu/) • [**Download Binaries**](#-cross-platform-downloads) • [**Features**](#-features) • [**CI/CD & Releases**](#-cicd-pipeline--automated-releases) • [**Development**](#-getting-started)
+<br/>
+
+### ⬇️ Direct Download Latest Release (All Platforms)
+
+<p align="center">
+  <a href="https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-android.apk">
+    <img src="https://img.shields.io/badge/Android-Download%20APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download Android APK" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-windows.zip">
+    <img src="https://img.shields.io/badge/Windows-Download%20ZIP-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows ZIP" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-linux.zip">
+    <img src="https://img.shields.io/badge/Linux-Download%20ZIP-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Download Linux ZIP" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-macos.zip">
+    <img src="https://img.shields.io/badge/macOS-Download%20ZIP-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS ZIP" />
+  </a>
+  &nbsp;
+  <a href="https://chandranshb.github.io/libre_edu/">
+    <img src="https://img.shields.io/badge/Web%20App-Launch%20in%20Browser-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Launch Web App" />
+  </a>
+</p>
+
+[**All Releases & Notes**](https://github.com/chandranshB/libre_edu/releases) • [**Features**](#-features) • [**Installation Guide**](#-installation--running-guide) • [**CI/CD Pipeline**](#-cicd-pipeline--automated-releases) • [**Development**](#-getting-started)
 
 </div>
 
@@ -30,18 +56,86 @@ Whether studying on an Android mobile device, a desktop workstation (Windows, Li
 
 ## 📦 Cross-Platform Downloads
 
-Every commit to `main` and all official releases automatically build and package binaries for all major platforms. You can always get the latest version from the links below:
+Every commit to `main` and all official releases automatically build, verify, and publish binaries for all supported platforms. 
 
-| Platform | Download Link | File Type | Compatibility |
+You can always download the latest compiled builds directly using the links below:
+
+| Platform | Download Link | File Type | Compatibility & Details |
 | :--- | :--- | :--- | :--- |
-| 📱 **Android** | [**`libre_edu-android.apk`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-android.apk) | APK | Android 5.0+ (Phones & Tablets) |
-| 🪟 **Windows** | [**`libre_edu-windows.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-windows.zip) | Portable ZIP | Windows 10 / 11 (64-bit) |
-| 🐧 **Linux** | [**`libre_edu-linux.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-linux.zip) | Executable Bundle | Ubuntu / Debian / Fedora / Arch |
-| 🍎 **macOS** | [**`libre_edu-macos.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-macos.zip) | Application Archive | macOS 11+ (Intel & Apple Silicon) |
-| 🌐 **Web** | [**`chandranshb.github.io/libre_edu`**](https://chandranshb.github.io/libre_edu/) *(or [Web ZIP](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-web.zip))* | Hosted App / ZIP | Any modern browser |
-| 🔒 **Integrity** | [**`SHA256SUMS.txt`**](https://github.com/chandranshB/libre_edu/releases/latest/download/SHA256SUMS.txt) | Checksums | Verify package checksums |
+| 📱 **Android** | [**`libre_edu-android.apk`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-android.apk) | APK | Android 5.0+ (ARM64, ARMv7, x86_64) |
+| 🪟 **Windows** | [**`libre_edu-windows.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-windows.zip) | Portable ZIP | Windows 10 & 11 (64-bit) |
+| 🐧 **Linux** | [**`libre_edu-linux.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-linux.zip) | Executable Bundle | Ubuntu, Debian, Fedora, Arch (x64) |
+| 🍎 **macOS** | [**`libre_edu-macos.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-macos.zip) | App Archive | macOS 11+ (Intel & Apple Silicon) |
+| 🌐 **Web** | [**`Launch Live Web App`**](https://chandranshb.github.io/libre_edu/) *(or [Web ZIP](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-web.zip))* | Hosted App / ZIP | Any modern web browser |
+| 🔒 **Integrity** | [**`SHA256SUMS.txt`**](https://github.com/chandranshB/libre_edu/releases/latest/download/SHA256SUMS.txt) | Checksums | SHA-256 verification hashes |
 
-> 💡 *To browse all previous releases and release notes, visit the [Releases page](https://github.com/chandranshB/libre_edu/releases).*
+> 💡 *To browse all previous releases, version changelogs, and release history, visit the [GitHub Releases](https://github.com/chandranshB/libre_edu/releases) page.*
+
+---
+
+## 📥 Installation & Running Guide
+
+### 📱 Android
+1. Click [**Download Android APK**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-android.apk) on your device.
+2. Tap the downloaded `.apk` file in your notification bar or Downloads folder.
+3. If prompted by Android, enable **Allow from this source** (or "Install Unknown Apps") in your device settings.
+4. Tap **Install** and open **Libre Edu**.
+
+### 🪟 Windows
+1. Download [**`libre_edu-windows.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-windows.zip).
+2. Right-click the `.zip` file and select **Extract All...** to extract to a folder.
+3. Open the extracted folder and double-click `libre_edu.exe` to run the app.
+   > *Note:* If Windows SmartScreen displays "Windows protected your PC", click **More info** → **Run anyway**.
+
+### 🐧 Linux
+1. Download [**`libre_edu-linux.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-linux.zip).
+2. Install required multimedia and GTK dependencies if not already present:
+   ```bash
+   # Ubuntu / Debian / Linux Mint
+   sudo apt update && sudo apt install -y libgtk-3-0 libmpv-dev libmpv2
+   
+   # Fedora / RHEL
+   sudo dnf install -y gtk3 mpv-libs
+   
+   # Arch Linux
+   sudo pacman -S --needed gtk3 mpv
+   ```
+3. Extract and run:
+   ```bash
+   unzip libre_edu-linux.zip -d libre_edu-linux
+   chmod +x libre_edu-linux/libre_edu
+   ./libre_edu-linux/libre_edu
+   ```
+
+### 🍎 macOS
+1. Download [**`libre_edu-macos.zip`**](https://github.com/chandranshB/libre_edu/releases/latest/download/libre_edu-macos.zip).
+2. Double-click the `.zip` file to extract `libre_edu.app`.
+3. Drag `libre_edu.app` into your `/Applications` folder.
+4. If macOS Gatekeeper prevents opening because it is from an unidentified developer:
+   - Either **Right-click (Control-click)** the app → click **Open** → then click **Open** in the dialog.
+   - Or run the following in Terminal to clear the quarantine attribute:
+     ```bash
+     xattr -cr /Applications/libre_edu.app
+     ```
+
+### 🌐 Web
+- **No download needed!**
+- Simply visit [**chandranshb.github.io/libre_edu**](https://chandranshb.github.io/libre_edu/) in any modern desktop or mobile browser.
+
+---
+
+## 🔒 Checksum Verification
+
+Every release includes a `SHA256SUMS.txt` file containing cryptographic checksums for every build artifact. You can verify that your download has not been corrupted or altered:
+
+```bash
+# Linux / macOS
+curl -sL https://github.com/chandranshB/libre_edu/releases/latest/download/SHA256SUMS.txt -o SHA256SUMS.txt
+sha256sum --ignore-missing -c SHA256SUMS.txt
+
+# Windows (PowerShell)
+Get-FileHash libre_edu-windows.zip -Algorithm SHA256
+```
 
 ---
 
@@ -72,7 +166,7 @@ Every commit to `main` and all official releases automatically build and package
 
 ## ⚙️ CI/CD Pipeline & Automated Releases
 
-Libre Edu features an automated GitHub Actions CI/CD workflow (`.github/workflows/flutter-build.yml`) that builds, verifies, packages, and publishes releases across all platforms.
+Libre Edu features an automated GitHub Actions CI/CD workflow ([`.github/workflows/flutter-build.yml`](.github/workflows/flutter-build.yml)) that builds, verifies, packages, and publishes releases across all platforms.
 
 ```mermaid
 flowchart LR
@@ -93,7 +187,7 @@ flowchart LR
 
 ### 1. Automated Rolling Releases (`latest`)
 - **Trigger**: Every push or merge to the `main` or `master` branch.
-- **Action**: All 5 platforms are compiled in parallel. Once all builds pass, the workflow downloads the artifacts, calculates SHA-256 hashes, force-updates the `latest` git tag, and publishes/refreshes the [Latest Release](https://github.com/chandranshB/libre_edu/releases/tag/latest).
+- **Action**: All 5 platforms are compiled in parallel. Once all builds pass, the release job downloads all artifacts, calculates SHA-256 hashes, force-updates the `latest` git tag, and refreshes the [Latest Release](https://github.com/chandranshB/libre_edu/releases/tag/latest).
 - **Result**: You and your users can always download fresh binaries without waiting for manual release tagging!
 
 ### 2. Official Versioned Releases (`v*.*.*`)
