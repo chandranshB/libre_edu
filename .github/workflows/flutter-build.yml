@@ -27,6 +27,7 @@ jobs:
   build:
     name: Build on ${{ matrix.os }} for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
 
     strategy:
       fail-fast: false
@@ -54,7 +55,7 @@ jobs:
 
           - os: macos-latest
             target: macOS
-            build_command: flutter build macos --release -v
+            build_command: flutter build macos --release --no-codesign
             asset_path: libre_edu-macos.zip
 
     steps:
@@ -79,6 +80,15 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+
+      - name: Configure Flutter
+        run: |
+          flutter config --no-analytics
+          flutter config --no-cli-animations
+
+      - name: Enable Windows Desktop
+        if: matrix.target == 'Windows'
+        run: flutter config --enable-windows-desktop
 
       - name: Install dependencies
         run: flutter pub get
@@ -125,6 +135,7 @@ jobs:
     name: Create & Publish GitHub Release
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.event_name != 'pull_request'
     permissions:
       contents: write
