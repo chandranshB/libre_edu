@@ -48,7 +48,7 @@ jobs:
             build_command: flutter build linux --release
             asset_path: libre_edu-linux.zip
 
-          - os: windows-latest
+          - os: windows-2022
             target: Windows
             build_command: flutter build windows --release
             asset_path: libre_edu-windows.zip
@@ -79,7 +79,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          cache: true
+          cache: false
 
       - name: Configure Flutter
         run: |
