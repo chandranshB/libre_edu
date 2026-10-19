@@ -4,13 +4,24 @@ on:
   push:
     branches: [ main, master ]
     tags:
-      - 'v*' # Trigger release when pushing a tag like v1.0.0
+      - 'v*' # Trigger official release when pushing a tag like v1.0.0
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (leave empty for latest rolling release, or specify e.g. v1.0.0)'
+        required: false
+        default: ''
+      is_prerelease:
+        description: 'Mark as pre-release'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -24,7 +35,7 @@ jobs:
           - os: ubuntu-latest
             target: Android
             build_command: flutter build apk --release
-            asset_path: build/app/outputs/flutter-apk/app-release.apk
+            asset_path: libre_edu-android.apk
 
           - os: ubuntu-latest
             target: Web
@@ -75,41 +86,128 @@ jobs:
       - name: Build ${{ matrix.target }}
         run: ${{ matrix.build_command }}
 
-      # Compress directories for GitHub Releases (Web, Linux, macOS, Windows)
+      # Prepare / compress release assets
+      - name: Package Android Build
+        if: matrix.target == 'Android'
+        run: cp build/app/outputs/flutter-apk/app-release.apk libre_edu-android.apk
+
       - name: Compress Web Build
         if: matrix.target == 'Web'
         run: zip -r libre_edu-web.zip build/web/
-      
+
       - name: Compress Linux Build
         if: matrix.target == 'Linux'
         run: zip -r libre_edu-linux.zip build/linux/x64/release/bundle/
 
       - name: Compress macOS Build
         if: matrix.target == 'macOS'
-        run: zip -r libre_edu-macos.zip build/macos/Build/Products/Release/
+        run: zip -r -y libre_edu-macos.zip build/macos/Build/Products/Release/
 
       - name: Compress Windows Build
         if: matrix.target == 'Windows'
-        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath libre_edu-windows.zip
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath libre_edu-windows.zip -Force
 
       - name: Upload Artifacts to Workflow Run
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-Build
           path: ${{ matrix.asset_path }}
-
-      - name: Upload to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ matrix.asset_path }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if-no-files-found: error
 
       - name: Deploy to GitHub Pages
-        if: matrix.target == 'Web' && github.ref == 'refs/heads/main'
+        if: matrix.target == 'Web' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: build/web/
-          # Optional: If you use a custom domain later, you can add cname here
+
+  release:
+    name: Create & Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: '*-Build'
+          merge-multiple: true
+
+      - name: Inspect Downloaded Artifacts
+        run: |
+          echo "=== Downloaded Artifacts in release-assets/ ==="
+          ls -lh release-assets/
+
+      - name: Generate Checksums
+        working-directory: release-assets
+        run: |
+          sha256sum libre_edu-* > SHA256SUMS.txt
+          echo "=== Generated SHA256 Checksums ==="
+          cat SHA256SUMS.txt
+
+      - name: Determine Release Metadata & Update Tags
+        id: release_info
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            IS_ROLLING="false"
+            IS_PRE="false"
+            MAKE_LATEST="true"
+            TITLE="Libre Edu ${TAG}"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.tag_name }}" ]]; then
+            TAG="${{ inputs.tag_name }}"
+            IS_ROLLING="false"
+            IS_PRE="${{ inputs.is_prerelease }}"
+            MAKE_LATEST="true"
+            TITLE="Libre Edu ${TAG}"
+            git tag -fa "${TAG}" -m "Release ${TAG} for commit ${{ github.sha }}"
+            git push -f origin "${TAG}"
+          else
+            TAG="latest"
+            IS_ROLLING="true"
+            IS_PRE="false"
+            MAKE_LATEST="true"
+            TITLE="Libre Edu (Latest Release)"
+            git tag -fa latest -m "Latest automated release for commit ${{ github.sha }}"
+            git push -f origin latest
+          fi
+
+          echo "tag_name=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "release_name=${TITLE}" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${IS_PRE}" >> "$GITHUB_OUTPUT"
+          echo "make_latest=${MAKE_LATEST}" >> "$GITHUB_OUTPUT"
+          echo "is_rolling=${IS_ROLLING}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Release Notes
+        env:
+          RELEASE_TAG: ${{ steps.release_info.outputs.tag_name }}
+          RELEASE_TITLE: ${{ steps.release_info.outputs.release_name }}
+          IS_ROLLING: ${{ steps.release_info.outputs.is_rolling }}
+        run: |
+          python3 .github/scripts/generate_release_notes.py
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_info.outputs.tag_name }}
+          name: ${{ steps.release_info.outputs.release_name }}
+          prerelease: ${{ steps.release_info.outputs.is_prerelease == 'true' }}
+          make_latest: ${{ steps.release_info.outputs.make_latest }}
+          body_path: release_body.md
+          generate_release_notes: true
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
