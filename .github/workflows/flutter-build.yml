@@ -55,7 +55,7 @@ jobs:
 
           - os: macos-latest
             target: macOS
-            build_command: flutter build macos --release --no-codesign
+            build_command: flutter build macos --release -v
             asset_path: libre_edu-macos.zip
 
     steps:
